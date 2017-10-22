@@ -1,0 +1,30 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+
+  config.hostmanager.enabled = true
+  config.hostmanager.ignore_private_ip = false
+  config.hostmanager.include_offline = true
+
+  config.vm.define "test" do |test|
+    config.vm.provider "virtualbox" do |v|
+        	v.memory = 1024
+	        v.cpus = 1
+	end
+    test.vm.box = "centos/7"
+    test.vm.hostname = "test.mylab.local"
+    test.vm.network :private_network, ip: "192.168.56.77"
+    test.hostmanager.aliases = %w(test)
+	test.vm.provision "shell", inline: <<-SHELL
+     sudo wget -qO- https://get.docker.com/ | sh
+	 sudo usermod -aG docker $(whoami)
+	 sudo systemctl enable docker.service
+	 sudo service docker start
+	 sudo yum install epel-release -y
+     sudo yum install -y python-pip
+	 sudo pip install docker-compose -y
+	 sudo yum upgrade python* -y
+	SHELL
+end
+end
